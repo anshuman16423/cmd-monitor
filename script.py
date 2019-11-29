@@ -36,10 +36,49 @@ def cpu(pad):
         curr += 2
     pad.addstr(curr, 3, 'CPU Frequency: ' + str(psutil.cpu_freq()[0]))
     curr += 2
-    pad.addstr(curr, 3, 'Number of processes: '+str(len(psutil.pids())))
+    pad.addstr(curr, 3, 'Number of processes: ' + str(len(psutil.pids())))
+
+    curr += 4
+    pad.addstr(curr-2, 2, '-'*41)
+    return curr
 
 
-def main_mem(pad):
+def main_mem(pad, start):
+    curr = start
+    pad.addstr(curr, 2, 'MAIN MEMORY')
+    curr += 2
+    mem = psutil.virtual_memory()
+    pad.addstr(curr, 3, 'Used: ' + str(mem.percent) + '%')
+    bar_length = int((int(mem.percent) / 100) * 20)
+    for i in range(20):
+        if i <= bar_length:
+
+            pad.addch(curr, 21 + i, ' ', curses.A_STANDOUT)
+        else:
+            pad.addch(curr, 21 + i, ' ')
+    pad.addch(curr, 41, '|')
+    curr+=2
+    pad.addstr(curr,3,'Total: ' + bytes2human(mem.total))
+    curr+=2
+    pad.addstr(curr, 3, 'Used: ' + bytes2human(mem.used))
+    curr+=2
+    pad.addstr(curr,2,'SWAP MEMORY')
+    curr += 2
+    mem = psutil.swap_memory()
+    pad.addstr(curr, 3, 'Used: ' + str(mem.percent) + '%')
+    bar_length = int((int(mem.percent) / 100) * 20)
+    for i in range(20):
+        if i <= bar_length:
+
+            pad.addch(curr, 21 + i, ' ', curses.A_STANDOUT)
+        else:
+            pad.addch(curr, 21 + i, ' ')
+    pad.addch(curr, 41, '|')
+    curr += 2
+    pad.addstr(curr, 3, 'Total: ' + bytes2human(mem.total))
+    curr += 2
+    pad.addstr(curr, 3, 'Used: ' + bytes2human(mem.used))
+    curr += 2
 
 
 def main(stdscr):
@@ -52,7 +91,8 @@ def main(stdscr):
 
     pad.refresh()
     while True:
-        cpu(pad)
+        row = cpu(pad)
+        row = main_mem(pad, row)
         pad.refresh()
         sleep(0.1)
         if pad.getch() > 0:
