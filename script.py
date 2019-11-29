@@ -3,7 +3,6 @@ from time import sleep
 import psutil
 from psutil._common import bytes2human
 
-
 def cpu(pad):
     use = psutil.cpu_percent()
     bar_length = int((use / 100) * 20)
@@ -44,6 +43,8 @@ def cpu(pad):
 
 
 def main_mem(pad, start):
+    pad.scrollok(1)
+    pad.idlok(1)
     curr = start
     pad.addstr(curr, 2, 'MAIN MEMORY')
     curr += 2
@@ -79,10 +80,13 @@ def main_mem(pad, start):
     curr += 2
     pad.addstr(curr, 3, 'Used: ' + bytes2human(mem.used))
     curr += 2
+    return curr
 
 
 def main(stdscr):
     curses.curs_set(0)
+    stdscr.scrollok(True)
+    stdscr.idlok(True)
     pad = stdscr
     pad.nodelay(True)
     pad.addstr(1, 2, 'RESOURCE MONITOR', curses.A_BOLD)
