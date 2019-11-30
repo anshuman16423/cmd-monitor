@@ -5,7 +5,3 @@ Python script aims at providing resource monitor on the command line platform.
 It uses PSUtil API for getting resource attributes.
 
   
-#### Issues
-
-
-- cpu_freq() function issues in linux. 
