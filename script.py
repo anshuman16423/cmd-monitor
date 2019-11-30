@@ -3,6 +3,7 @@ from time import sleep
 import psutil
 from psutil._common import bytes2human
 
+
 def cpu(pad):
     use = psutil.cpu_percent()
     bar_length = int((use / 100) * 20)
@@ -33,18 +34,17 @@ def cpu(pad):
         pad.addch(curr, 41, '|')
         core += 1
         curr += 2
-    pad.addstr(curr, 3, 'CPU Frequency: ' + str(psutil.cpu_freq()[0]))
+    # pad.addstr(curr, 3, 'CPU Frequency: ' + str(psutil.cpu_freq()[0]))
     curr += 2
     pad.addstr(curr, 3, 'Number of processes: ' + str(len(psutil.pids())))
 
     curr += 4
-    pad.addstr(curr-2, 2, '-'*41)
+    pad.addstr(curr - 2, 2, '-' * 41)
     return curr
 
 
 def main_mem(pad, start):
     pad.scrollok(1)
-    pad.idlok(1)
     curr = start
     pad.addstr(curr, 2, 'MAIN MEMORY')
     curr += 2
@@ -53,17 +53,16 @@ def main_mem(pad, start):
     bar_length = int((int(mem.percent) / 100) * 20)
     for i in range(20):
         if i <= bar_length:
-
             pad.addch(curr, 21 + i, ' ', curses.A_STANDOUT)
         else:
             pad.addch(curr, 21 + i, ' ')
     pad.addch(curr, 41, '|')
-    curr+=2
-    pad.addstr(curr,3,'Total: ' + bytes2human(mem.total))
-    curr+=2
+    curr += 2
+    pad.addstr(curr, 3, 'Total: ' + bytes2human(mem.total))
+    curr += 2
     pad.addstr(curr, 3, 'Used: ' + bytes2human(mem.used))
-    curr+=2
-    pad.addstr(curr,2,'SWAP MEMORY')
+    curr += 2
+    pad.addstr(curr, 2, 'SWAP MEMORY')
     curr += 2
     mem = psutil.swap_memory()
     pad.addstr(curr, 3, 'Used: ' + str(mem.percent) + '%')
@@ -84,6 +83,11 @@ def main_mem(pad, start):
 
 
 def main(stdscr):
+    try:
+        stdscr.addch(40,60,' ')
+    except:
+        print("Screen size not enough...")
+        exit()
     curses.curs_set(0)
     stdscr.scrollok(True)
     stdscr.idlok(True)
@@ -92,7 +96,6 @@ def main(stdscr):
     pad.addstr(1, 2, 'RESOURCE MONITOR', curses.A_BOLD)
     pad.addstr(3, 2, 'CPU STATS')
     pad.addstr(4, 3, 'CPU USAGE')
-
     pad.refresh()
     while True:
         row = cpu(pad)
