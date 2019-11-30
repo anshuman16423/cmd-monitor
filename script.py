@@ -39,7 +39,7 @@ def cpu(pad):
         pad.addstr(curr, 3, 'CPU Frequency: ' + str(psutil.cpu_freq()[0]))
         curr += 2
     except:
-        pad.addstr(curr, 3, 'CPU Frequency: Known issue with PSUtil')
+        pad.addstr(curr, 3, 'CPU Frequency: Not found')
         curr += 2
     pad.addstr(curr, 3, 'Number of processes: ' + str(len(psutil.pids())))
 
