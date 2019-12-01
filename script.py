@@ -185,8 +185,6 @@ def secondry_mem(pad, curr):
     curr += 4
     pad.addstr(curr, 45, '-' * 47)
     curr += 2
-    pad.addstr(curr,45, "Developed by Anshuman Sharma")
-    pad.addstr(curr+1,45,"Visit: github.com/anshuman16423 for contributing.")
     return curr
 
 
