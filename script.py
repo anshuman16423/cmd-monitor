@@ -4,6 +4,7 @@ import psutil
 from psutil._common import bytes2human
 import time
 
+
 def cpu(pad):
     use = psutil.cpu_percent()
     bar_length = int((use / 100) * 20)
@@ -121,10 +122,10 @@ def battery(pad):
     return curr
 
 
-def netio(pad,curr):
+def netio(pad, curr):
     curr += 2
     pad.addstr(curr, 45, "Network stats")
-    curr+=2
+    curr += 2
 
     # Calculating upload and download speeds
 
@@ -132,18 +133,50 @@ def netio(pad,curr):
     t_i = time.time()
     ini_s = ini.bytes_sent
     ini_r = ini.bytes_recv
-    sleep(0.09)
+    sleep(0.06)
     fin = psutil.net_io_counters()
     fin_s = fin.bytes_sent
     fin_r = fin.bytes_recv
     t_f = time.time()
-    upload_speed = str((fin_s - ini_s)/(t_f - t_i))[:10]
-    download_speed = str((fin_r - ini_r)/(t_f - t_i))[:10]
-    upload_speed+=' '*(10-len(upload_speed))
-    download_speed+=' '*(10-len(download_speed))
-    pad.addstr(curr,46,"Upload Speed: "+ upload_speed)
-    pad.addstr(curr+2,46,"Download Speed: "+download_speed)
-    curr+=4
+    upload_speed = str((fin_s - ini_s) / (t_f - t_i))[:10]
+    download_speed = str((fin_r - ini_r) / (t_f - t_i))[:10]
+    upload_speed += ' ' * (10 - len(upload_speed))
+    download_speed += ' ' * (10 - len(download_speed))
+    pad.addstr(curr, 46, "Upload Speed: " + upload_speed+" kb/s")
+    pad.addstr(curr + 2, 46, "Download Speed: " + download_speed+" kb/s")
+    curr += 4
+    pad.addstr(curr,45,'-'*47)
+    curr+=2
+    return curr
+
+
+def secondry_mem(pad,curr):
+    curr += 2
+    pad.addstr(curr, 45, "System disks stats    ")
+    curr += 2
+
+    # Calculating upload and download speeds
+
+    ini = psutil.disk_io_counters()
+    t_i = time.time()
+    ini_s = ini.read_bytes
+    ini_r = ini.write_bytes
+    sleep(0.06)
+    fin = psutil.disk_io_counters()
+    fin_s = fin.read_bytes
+    fin_r = fin.write_bytes
+    t_f = time.time()
+    upload_speed = str((fin_s - ini_s) / (t_f - t_i))[:10]
+    download_speed = str((fin_r - ini_r) / (t_f - t_i))[:10]
+    upload_speed += ' ' * (10 - len(upload_speed))
+    download_speed += ' ' * (10 - len(download_speed))
+    pad.addstr(curr, 46, "Read Speed: " + upload_speed+" kb/s")
+    pad.addstr(curr + 2, 46, "Write Speed: " + download_speed+" kb/s")
+    curr += 4
+    pad.addstr(curr, 45, '-' * 47)
+    curr += 2
+    return curr
+
 
 def main(stdscr):
     try:
@@ -163,8 +196,9 @@ def main(stdscr):
     while True:
         row = cpu(pad)
         row = main_mem(pad, row)
-        row=battery(pad)
-        netio(pad,row)
+        row = battery(pad)
+        row = netio(pad, row)
+        row = secondry_mem(pad,row)
         pad.refresh()
         sleep(0.1)
         if pad.getch() > 0:
