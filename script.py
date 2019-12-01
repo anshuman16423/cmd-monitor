@@ -97,26 +97,27 @@ def main_mem(pad, start):
 
 def battery(pad):
     curr = 4
-    pad.addstr(curr, 45, "Battery Stats")
+    pad.addstr(curr, 45, "Battery status      ")
     curr += 2
     stat = psutil.sensors_battery()
     if stat.power_plugged:
         pad.addstr(curr, 46, "Charger plugged in")
-        pad.addstr(curr + 1, 46, "Battery charged: " + str(stat.percent))
+        pad.addstr(curr + 2, 46, "Battery charged:   " + str(stat.percent)+'% ')
         bar_length = int((int(stat.percent) / 100) * 20)
         for i in range(20):
             if i <= bar_length:
 
-                pad.addch(curr + 1, 46 + i, ' ', curses.A_STANDOUT)
+                pad.addch(curr + 2, 70 + i, ' ', curses.A_STANDOUT)
             else:
-                pad.addch(curr, 46 + i, ' ', curses.A_UNDERLINE)
-                pad.addch(curr + 1, 46 + i, ' ', curses.A_UNDERLINE)
-        pad.addch(curr + 1, 41, '|')
-
+                pad.addch(curr+1, 70 + i, ' ', curses.A_UNDERLINE)
+                pad.addch(curr + 2, 70 + i, ' ', curses.A_UNDERLINE)
+        pad.addch(curr + 2, 90, '|')
+        curr += 4
+        pad.addstr(curr, 45, '-' * 47)
 
     else:
-        pad.addstr(curr, 46, "On Battery")
-        pad.addstr(curr + 2, 46, "Battery Remaining: " + str(stat.percent))
+        pad.addstr(curr, 46, "On Battery          ")
+        pad.addstr(curr + 2, 46, "Battery Remaining: " + str(stat.percent)+'%'+' ')
         bar_length = int((int(stat.percent) / 100) * 20)
         for i in range(20):
             if i <= bar_length:
