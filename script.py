@@ -3,6 +3,7 @@ from time import sleep
 import psutil
 from psutil._common import bytes2human
 import time
+from threading import Thread
 
 
 def cpu(pad):
@@ -133,7 +134,7 @@ def netio(pad, curr):
     t_i = time.time()
     ini_s = ini.bytes_sent
     ini_r = ini.bytes_recv
-    sleep(0.06)
+    sleep(1)
     fin = psutil.net_io_counters()
     fin_s = fin.bytes_sent
     fin_r = fin.bytes_recv
@@ -147,6 +148,7 @@ def netio(pad, curr):
     curr += 4
     pad.addstr(curr,45,'-'*47)
     curr+=2
+    pad.refresh()
     return curr
 
 
@@ -161,7 +163,7 @@ def secondry_mem(pad,curr):
     t_i = time.time()
     ini_s = ini.read_bytes
     ini_r = ini.write_bytes
-    sleep(0.06)
+    sleep(1)
     fin = psutil.disk_io_counters()
     fin_s = fin.read_bytes
     fin_r = fin.write_bytes
@@ -193,15 +195,19 @@ def main(stdscr):
     pad.addstr(3, 2, 'CPU STATS')
     pad.addstr(4, 3, 'CPU USAGE')
     pad.refresh()
+
     while True:
         row = cpu(pad)
         row = main_mem(pad, row)
         row = battery(pad)
-        row = netio(pad, row)
-        row = secondry_mem(pad,row)
+        net_thread = Thread(target=netio, args=(pad, 14,))
+        sec_mem_thread = Thread(target=secondry_mem, args=(pad, 23,))
+        net_thread.start()
+        sec_mem_thread.start()
         pad.refresh()
         sleep(0.1)
         if pad.getch() > 0:
+            sleep(0.5)
             exit()
 
 
