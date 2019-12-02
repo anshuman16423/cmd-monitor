@@ -5,11 +5,14 @@ from psutil._common import bytes2human
 import time
 from threading import Thread
 
+CPU_GRAPH_LOCK = False
+MEM_GRAPH_LOCK = False
+
 
 def cpu(pad):
     use = psutil.cpu_percent()
     bar_length = int((use / 100) * 20)
-    pad.addstr(4, 13, str(use) + '%')
+    pad.addstr(4, 13, str(use) + '% ')
     pad.addch(4, 41, '|')
     for i in range(20):
         if i <= bar_length:
@@ -27,7 +30,7 @@ def cpu(pad):
         use = per
         bar_length = int((int(use) / 100) * 20)
         pad.addstr(curr, 3, 'Core ' + str(core))
-        pad.addstr(curr, 13, str(use) + '%')
+        pad.addstr(curr, 13, str(use) + '% ')
         pad.addch(4, 41, '|')
         for i in range(20):
             if i <= bar_length:
@@ -102,14 +105,14 @@ def battery(pad):
     stat = psutil.sensors_battery()
     if stat.power_plugged:
         pad.addstr(curr, 46, "Charger plugged in")
-        pad.addstr(curr + 2, 46, "Battery charged:   " + str(stat.percent)+'% ')
+        pad.addstr(curr + 2, 46, "Battery charged:   " + str(stat.percent) + '% ')
         bar_length = int((int(stat.percent) / 100) * 20)
         for i in range(20):
             if i <= bar_length:
 
                 pad.addch(curr + 2, 70 + i, ' ', curses.A_STANDOUT)
             else:
-                pad.addch(curr+1, 70 + i, ' ', curses.A_UNDERLINE)
+                pad.addch(curr + 1, 70 + i, ' ', curses.A_UNDERLINE)
                 pad.addch(curr + 2, 70 + i, ' ', curses.A_UNDERLINE)
         pad.addch(curr + 2, 90, '|')
         curr += 4
@@ -117,7 +120,7 @@ def battery(pad):
 
     else:
         pad.addstr(curr, 46, "On Battery          ")
-        pad.addstr(curr + 2, 46, "Battery Remaining: " + str(stat.percent)+'%'+' ')
+        pad.addstr(curr + 2, 46, "Battery Remaining: " + str(stat.percent) + '%' + ' ')
         bar_length = int((int(stat.percent) / 100) * 20)
         for i in range(20):
             if i <= bar_length:
@@ -189,6 +192,49 @@ def secondry_mem(pad, curr):
     return curr
 
 
+def cpu_graph(pad):
+    CPU_GRAPH_LOCK = True
+    curr = 2
+    pad.addstr(curr, 95, "CPU graph")
+    curr += 2
+    dq = [0] * 30  # queue of length 30 i,e. stores previous 30 values
+    curr += 20
+    while True:
+        per = psutil.cpu_percent()
+        pad.addstr(curr - 21, 95, 'Current Usage: ' + str(per) + '%')
+        dq.append(int((int(per) * 20) / 100))
+        # print(dq)
+        dq.pop(0)
+        prev = dq[0]
+        # print(curr)
+
+        for row in range(95, 125):
+            # print(prev,dq[row-95])
+            for col in range(21):
+                if dq[row - 95] < prev:
+                    if col == dq[row - 95]:
+                        pad.addch(curr - col, row, "#")
+                    else:
+                        pad.addch(curr - col, row, ' ')
+                elif dq[row-95]==prev:
+                    if col==dq[row-95]:
+
+                        pad.addch(curr-col, row, '#')
+                    else:
+                        pad.addch(curr - col, row, ' ')
+                else:
+                    if prev <= col <= dq[row - 95]:
+                        pad.addch(curr - col, row, '#')
+                    else:
+                        pad.addch(curr - col, row, ' ')
+            prev = dq[row - 95]
+        pad.refresh()
+        if pad.getch() > 0:
+            exit()
+        sleep(1)
+        CPU_GRAPH_LOCK = False
+
+
 def main(stdscr):
     try:
         stdscr.addch(40, 60, ' ')
@@ -205,6 +251,8 @@ def main(stdscr):
     pad.addstr(4, 3, 'CPU USAGE')
     pad.refresh()
 
+    cpu_gr = Thread(target=cpu_graph, args=(pad,))
+    cpu_gr.start()
     while True:
         row = cpu(pad)
         row = main_mem(pad, row)
