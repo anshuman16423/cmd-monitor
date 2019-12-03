@@ -5,8 +5,7 @@ from psutil._common import bytes2human
 import time
 from threading import Thread
 
-CPU_GRAPH_LOCK = False
-MEM_GRAPH_LOCK = False
+EXIT = False
 
 
 def cpu(pad):
@@ -193,7 +192,6 @@ def secondry_mem(pad, curr):
 
 
 def cpu_graph(pad):
-    CPU_GRAPH_LOCK = True
     curr = 2
     pad.addstr(curr, 95, "CPU graph")
     curr += 2
@@ -213,26 +211,66 @@ def cpu_graph(pad):
             for col in range(21):
                 if dq[row - 95] < prev:
                     if col == dq[row - 95]:
-                        pad.addch(curr - col, row, "#")
+                        pad.addch(curr - col, row, "_", curses.A_BOLD)
                     else:
                         pad.addch(curr - col, row, ' ')
-                elif dq[row-95]==prev:
-                    if col==dq[row-95]:
+                elif dq[row - 95] == prev:
+                    if col == dq[row - 95]:
 
-                        pad.addch(curr-col, row, '#')
+                        pad.addch(curr - col, row, '_', curses.A_BOLD)
                     else:
                         pad.addch(curr - col, row, ' ')
                 else:
                     if prev <= col <= dq[row - 95]:
-                        pad.addch(curr - col, row, '#')
+                        pad.addch(curr - col, row, '_', curses.A_BOLD)
                     else:
                         pad.addch(curr - col, row, ' ')
             prev = dq[row - 95]
+        pad.addstr(curr+3, 95, '-'*30)
         pad.refresh()
+        if EXIT:
+            exit()
         if pad.getch() > 0:
             exit()
         sleep(1)
-        CPU_GRAPH_LOCK = False
+
+
+def main_mem_graph(pad):
+    curr = 2
+    pad.addstr(curr, 130, "Main Memory graph")
+    curr += 2
+    dq = [0] * 30  # queue of length 30 i,e. stores previous 30 values
+    curr += 20
+    while True:
+        per = psutil.virtual_memory().percent
+        pad.addstr(curr - 21, 130, 'Current Usage: ' + str(per) + '%')
+        dq.append(int((int(per) * 20) / 100))
+        # print(dq)
+        dq.pop(0)
+        prev = dq[0]
+        # print(curr)
+
+        for row in range(130, 160):
+            # print(prev,dq[row-95])
+            for col in range(21):
+                if dq[row - 130] <= prev:
+                    if col == dq[row - 130]:
+                        pad.addch(curr - col, row, "_",curses.A_BOLD)
+                    else:
+                        pad.addch(curr - col, row, ' ')
+                else:
+                    if prev <= col <= dq[row - 130]:
+                        pad.addch(curr - col, row, '_', curses.A_BOLD)
+                    else:
+                        pad.addch(curr - col, row, ' ')
+            prev = dq[row - 130]
+        pad.addstr(curr+3, 130, '-'*30)
+        pad.refresh()
+        if EXIT:
+            exit()
+        if pad.getch() > 0:
+            exit()
+        sleep(1)
 
 
 def main(stdscr):
@@ -247,12 +285,15 @@ def main(stdscr):
     pad = stdscr
     pad.nodelay(True)
     pad.addstr(1, 2, 'RESOURCE MONITOR', curses.A_DIM)
+    print(stdscr.getch(1, 2))
     pad.addstr(3, 2, 'CPU STATS')
     pad.addstr(4, 3, 'CPU USAGE')
     pad.refresh()
 
     cpu_gr = Thread(target=cpu_graph, args=(pad,))
+    mm_gr = Thread(target=main_mem_graph, args=(pad, ))
     cpu_gr.start()
+    mm_gr.start()
     while True:
         row = cpu(pad)
         row = main_mem(pad, row)
@@ -264,7 +305,7 @@ def main(stdscr):
         pad.refresh()
         sleep(0.1)
         if pad.getch() > 0:
-            sleep(0.5)
+            EXIT = True
             exit()
 
 
