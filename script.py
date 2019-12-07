@@ -4,6 +4,7 @@ import psutil
 from psutil._common import bytes2human
 import time
 from threading import Thread
+import os
 
 EXIT = False
 
@@ -228,6 +229,7 @@ def cpu_graph(pad):
             prev = dq[row - 95]
         pad.addstr(curr+3, 95, '-'*30)
         pad.refresh()
+        print(EXIT)
         if EXIT:
             exit()
         if pad.getch() > 0:
@@ -266,6 +268,7 @@ def main_mem_graph(pad):
             prev = dq[row - 130]
         pad.addstr(curr+3, 130, '-'*30)
         pad.refresh()
+        print(EXIT)
         if EXIT:
             exit()
         if pad.getch() > 0:
@@ -306,7 +309,9 @@ def main(stdscr):
         sleep(0.1)
         if pad.getch() > 0:
             EXIT = True
-            exit()
+            cpu_gr.join()
+            mm_gr.join()
+            os._exit(0)
 
 
 curses.wrapper(main)
