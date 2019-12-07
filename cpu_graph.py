@@ -40,4 +40,7 @@ def main(stdscr):
             exit()
 
 
+
+
+
 curses.wrapper(main)
