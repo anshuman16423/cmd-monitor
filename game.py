@@ -9,13 +9,24 @@ def main(stdscr):
     stdscr.idlok(True)
     pad = stdscr
     pad.nodelay(True)
+    score = 0
     block = [0] * 60
     for i in range(60):
         if (i+5) % 20 == 0:
             block[i] = 1
-    for i in range(60):
-        pad.addch(10, 5 + i, '_')
+    c=0
+    base=[0]*59
+    for i in range(59):
+        if i%2:
+            base[i]=' '
+        else:
+            base[i]='-'
     while True:
+        for i in range(59):
+            pad.addch(10,5+i,base[i])
+        base.append(base.pop(0))
+        pad.addstr(2,45,'Score: '+str(score))
+        score += 5
         if pad.getch() == 97 and not jump:
             jump = [8, 7, 7.5, 6, 6.5, 5, 4, 5, 6.5, 6,  7, 7.5, 8]
         try:
@@ -23,6 +34,7 @@ def main(stdscr):
         except:
             ht = 9
         if block[0] and ht>=8:
+            print("Score: "+str(score))
             exit()
         for i in range(2, 10):
             if i == ht:
